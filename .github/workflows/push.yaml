@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest] #windows-latest,
-        python-version: [3.7]
+        python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
       - name: Install requirements
         run: pip install tox
       - name: Run pre-commit
-        run: tox
+        run: tox -e py${{ matrix.python-version }}
   #     - name: Run tests
   #       run: |
   #           sed -i 1d .envrc
