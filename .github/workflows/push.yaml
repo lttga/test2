@@ -37,8 +37,8 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Run pre-commit
         run: |
-              export PYVER={{ matrix.python-version }}
-              tox -e py"  ${PYVER//.}"
+              export PYVER=${{ matrix.python-version }}
+              tox -e py"${PYVER//.}"
   #     - name: Run tests
   #       run: |
   #           sed -i 1d .envrc
