@@ -28,7 +28,9 @@ jobs:
       - name: Install requirements
         run: pip install tox
       - name: Run pre-commit
-        run: tox -e py${{ matrix.python-version }}
+        run: |
+              export PYVER="py{{ matrix.python-version }}"
+              tox -e ${PYVER//.}
   #     - name: Run tests
   #       run: |
   #           sed -i 1d .envrc
