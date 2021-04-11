@@ -24,12 +24,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version:  ${{ matrix.python-version }}
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+      # - uses: actions/cache@v2
+      #   with:
+      #     path: ${{ env.pythonLocation }}
+      #     key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/setup.py') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-pip-${{ matrix.python-version }}-
       - name: Install requirements
         run: pip install tox coveralls
       - name: Run linux test
