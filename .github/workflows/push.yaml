@@ -31,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install requirements
-        run: pip install tox
+        run: pip install tox coveralls
       - name: Run linux test
         if: matrix.os == 'ubuntu-latest'
         run: tox -e py"${PYVER//.}"
