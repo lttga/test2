@@ -11,6 +11,22 @@ on:
        - main
 
 jobs:
+  lint:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.cfg') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Run pre-commit
+        run: |
+            pip install pre-commit
+            pre-commit autoupdate
+            pre-commit run --all-files
   tests:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -24,14 +40,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version:  ${{ matrix.python-version }}
-      # - uses: actions/cache@v2
-      #   with:
-      #     path: ${{ env.pythonLocation }}
-      #     key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/setup.py') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-pip-${{ matrix.python-version }}-
       - name: Install requirements
-        run: pip install tox coveralls
+        run: |
+              pip install .[test]
+              pip install tox
       - name: Run linux test
         if: matrix.os == 'ubuntu-latest'
         run: tox -e py"${PYVER//.}"

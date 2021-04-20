@@ -1,19 +1,26 @@
-import json
 import logging
-from typing import List, Mapping
 from collections import deque
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
+from typing import List, Mapping
 
 import jsonref
 
-from spoonbill.spec import Table, Column, add_child_table
-from spoonbill.common import DEFAULT_FIELDS, ARRAY, JOINABLE, JOINABLE_SEPARATOR
-from spoonbill.utils import extract_type, \
-    validate_type, get_root, get_matching_tables, generate_row_id, recalculate_headers, PYTHON_TO_JSON_TYPE
+from spoonbill.common import ARRAY, DEFAULT_FIELDS, JOINABLE, JOINABLE_SEPARATOR, TABLE_THRESHOLD
+from spoonbill.i18n import _
+from spoonbill.spec import Column, Table, add_child_table
+from spoonbill.utils import (
+    PYTHON_TO_JSON_TYPE,
+    extract_type,
+    generate_row_id,
+    get_matching_tables,
+    get_root,
+    recalculate_headers,
+    resolve_file_uri,
+    validate_type,
+)
 
 PREVIEW_ROWS = 20
-ARRAY_THRESHOLD = 5
-LOGGER = logging.getLogger('spoonbill')
+LOGGER = logging.getLogger("spoonbill")
 
 
 @dataclass
@@ -24,10 +31,10 @@ class DataPreprocessor:
 
     # better to keep '/' to be more like jsonpointers
     # TODO: do we need this to be configurable at all???
-    header_separator: str = '/'
-    array_threshold: int = ARRAY_THRESHOLD
-    tables: Mapping[str, Table] = field(default_factory=dict, init=False)
-    current_table: Table = field(init=False)
+    header_separator: str = "/"
+    table_threshold: int = TABLE_THRESHOLD
+    tables: Mapping[str, Table] = field(default_factory=dict)
+    current_table: Table = field(init=False, default=None)
     _lookup_cache: Mapping[str, Table] = field(default_factory=dict, init=False)
     _table_by_path: Mapping[str, Table] = field(default_factory=dict, init=False)
 
@@ -35,14 +42,11 @@ class DataPreprocessor:
         return self.tables[table]
 
     def init_tables(self, tables, is_combined=False):
+        """Initialize root tables with default fields"""
         for name, path in tables.items():
-            table = Table(name,
-                          path,
-                          is_root=True,
-                          is_combined=is_combined,
-                          parent='')
+            table = Table(name, path, is_root=True, is_combined=is_combined, parent="")
             for col in DEFAULT_FIELDS:
-                column = Column(col, 'string', col)
+                column = Column(col, "string", col)
                 table.columns[col] = column
                 table.combined_columns[col] = column
                 table.titles[col] = col
@@ -51,32 +55,31 @@ class DataPreprocessor:
                 self._table_by_path[p] = table
 
     def __post_init__(self):
-        if isinstance(self.schema_dict, str):
-            if self.schema_dict.startswith('http'):
-                import requests
-                self.schema_dict = requests.get(self.schema_dict).json()
-            else:
-                with open(self.schema_dict) as fd:
-                    self.schema_dict = json.load(fd)
+        if not self.tables:
+            self.parse_schema()
 
+    def parse_schema(self):
+        if isinstance(self.schema_dict, str):
+            self.schema_dict = resolve_file_uri(self.schema_dict)
         self.schema_dict = jsonref.JsonRef.replace_refs(self.schema_dict)
         self.init_tables(self.root_tables)
         if self.combined_tables:
             self.init_tables(self.combined_tables, is_combined=True)
         separator = self.header_separator
-        to_analyze = deque([('', '', {}, self.schema_dict)])
+        to_analyze = deque([("", "", {}, self.schema_dict)])
 
+        # TODO: check if recursion is better for field ordering
         while to_analyze:
             path, parent_key, parent, prop = to_analyze.pop()
-            if prop.get('deprecated'):
+            if prop.get("deprecated"):
                 continue
             # TODO: handle oneOf anyOf allOf
-            properties = prop.get('properties', {})
+            properties = prop.get("properties", {})
             if properties:
                 for key, item in properties.items():
-                    if item.get('deprecated'):
+                    if item.get("deprecated"):
                         continue
-                    if hasattr(item, '__reference__') and item.__reference__.get('deprecated'):
+                    if hasattr(item, "__reference__") and item.__reference__.get("deprecated"):
                         continue
 
                     type_ = extract_type(item)
@@ -86,44 +89,39 @@ class DataPreprocessor:
                         continue
 
                     self.current_table.types[pointer] = type_
-                    if 'object' in type_:
+                    if "object" in type_:
                         to_analyze.append((pointer, key, properties, item))
-                    elif 'array' in type_:
-                        items = item['items']
+                    elif "array" in type_:
+                        items = item["items"]
                         items_type = extract_type(items)
-                        if set(items_type) & {'array', 'object'}:
+                        if set(items_type) & {"array", "object"}:
                             if pointer not in self.current_table.path:
                                 # found child array, need to create child table
                                 child_table = add_child_table(self.current_table, pointer, parent_key, key)
                                 self.tables[child_table.name] = child_table
-                                self._lookup_cache = dict()
+                                self._lookup_cache = {}
                                 self.current_table = child_table
+                                self._table_by_path[pointer] = child_table
                             to_analyze.append((pointer, key, properties, items))
                         else:
                             # This means we in array of strings, so this becomes a single joinable column
                             type_ = ARRAY.format(items_type)
                             self.current_table.types[pointer] = JOINABLE
-                            self.current_table.add_column(
-                                pointer,
-                                item,
-                                type_,
-                                parent=prop,
-                                joinable=True
-                            )
+                            self.current_table.add_column(pointer, item, type_, parent=prop, joinable=True)
                     else:
                         if self.current_table.is_combined:
                             pointer = separator + separator.join((parent_key, key))
-                        self.current_table.add_column(
-                            pointer,
-                            item,
-                            type_,
-                            parent=prop
-                        )
+                        self.current_table.add_column(pointer, item, type_, parent=prop)
             else:
                 # TODO: not sure what to do here
                 continue
 
     def get_table(self, path):
+        """Get best matching table for `path`
+
+        :param path: Path to find corresponding table
+        :return: Best matching table
+        """
         if path in self._lookup_cache:
             return self._lookup_cache[path]
         candidates = get_matching_tables(self.tables, path)
@@ -133,38 +131,40 @@ class DataPreprocessor:
         self._lookup_cache[path] = table
         return table
 
-    def add_preview_row(self, ocid, item_id, row_id, parent_id, parent_table=''):
+    def add_preview_row(self, ocid, item_id, row_id, parent_id, parent_table=""):
         """Append empty row to previews
 
         Important to do because all preview items is set using -1 index to access current row
+
         :param ocid: Row ocid
         :param item_id: Current object id
         :param row_id: Unique row id
         :param parent_id: Parent object id
         :param parent_table: Parent table name
         """
-        defaults = {'ocid': ocid, "rowID": row_id, 'parentID': parent_id, "id": item_id}
+        defaults = {"ocid": ocid, "rowID": row_id, "parentID": parent_id, "id": item_id}
         if parent_table:
-            defaults['parentTable'] = parent_table
+            defaults["parentTable"] = parent_table
         self.current_table.preview_rows.append(defaults)
         if self.current_table.is_root:
-            self.current_table.preview_rows_combined.append(defaults)
+            self.current_table.preview_rows_combined.append(
+                {"ocid": ocid, "rowID": row_id, "parentID": parent_id, "id": item_id}
+            )
 
     def process_items(self, releases, with_preview=True):
         """Analyze releases
 
         Iterate over every item in provided list to
-        calculate metrics and optionally generate combined and split of flattened preview
+        calculate metrics and optionally generate preview for combined and split version of the table
 
         :param releases: Iterator of items to analyze
-        :param with_preview: Generate previews if set to True
+        :param with_preview: If set to True generates previews for each table
         """
         separator = self.header_separator
         for count, release in enumerate(releases):
-
-            to_analyze = deque([('', '', '', {}, release)])
-            ocid = release['ocid']
-            top_level_id = release['id']
+            to_analyze = deque([("", "", "", {}, release)])
+            ocid = release["ocid"]
+            top_level_id = release["id"]
 
             while to_analyze:
                 abs_path, path, parent_key, parent, record = to_analyze.pop()
@@ -175,75 +175,77 @@ class DataPreprocessor:
                         table.inc_column(col_name)
 
                     # TODO: fields without ids??
-                    row_id = generate_row_id(ocid,
-                                             record.get('id', ''),
-                                             parent_key,
-                                             top_level_id)
+                    row_id = generate_row_id(ocid, record.get("id", ""), parent_key, top_level_id)
                     self.current_table = table
                     if count < PREVIEW_ROWS:
-                        self.add_preview_row(
-                            ocid,
-                            record.get('id'),
-                            row_id,
-                            parent.get('id'),
-                            parent_key)
+                        self.add_preview_row(ocid, record.get("id"), row_id, parent.get("id"), parent_key)
                 for key, item in record.items():
                     pointer = separator.join([path, key])
                     self.current_table = self.get_table(pointer)
                     if not self.current_table:
                         continue
-                    type_ = self.current_table.types.get(pointer)
+                    item_type = self.current_table.types.get(pointer)
+
                     # TODO: this validation should probably be smarter with arrays
-                    if type_ and type_ != JOINABLE and not validate_type(type_, item):
-                        LOGGER.debug(
-                            f'Mismatched type on {pointer} expected {type_}'
-                        )
+                    if item_type and item_type != JOINABLE and not validate_type(item_type, item):
+                        LOGGER.debug(f"Mismatched type on {pointer} expected {item_type}")
                         continue
 
                     if isinstance(item, dict):
-                        to_analyze.append((separator.join([abs_path, key]),
-                                           pointer,
-                                           key,
-                                           record,
-                                           item))
+
+                        to_analyze.append(
+                            (
+                                separator.join([abs_path, key]),
+                                pointer,
+                                key,
+                                record,
+                                item,
+                            )
+                        )
                     elif isinstance(item, list):
-                        if type_ == JOINABLE:
+                        if item_type == JOINABLE:
+                            self.current_table.inc_column(pointer)
                             if with_preview and count < PREVIEW_ROWS:
                                 value = JOINABLE_SEPARATOR.join(item)
                                 self.current_table.preview_rows[-1][pointer] = value
                         elif self.current_table.is_root:
                             abs_pointer = separator.join([abs_path, key])
                             for value in item:
-                                to_analyze.append((
-                                    abs_pointer,
-                                    pointer,
-                                    key,
-                                    record,
-                                    value,
-                                ))
+                                to_analyze.append(
+                                    (
+                                        abs_pointer,
+                                        pointer,
+                                        key,
+                                        record,
+                                        value,
+                                    )
+                                )
                         else:
                             root = get_root(self.current_table)
                             if root.set_array(pointer, item):
                                 recalculate_headers(root, abs_path, key, item, separator)
 
                             for i, value in enumerate(item):
-                                if isinstance(value,  dict):
+                                if isinstance(value, dict):
                                     if count < PREVIEW_ROWS:
                                         if pointer in self.current_table.path:
                                             self.add_preview_row(
                                                 ocid,
-                                                value.get('id'),
+                                                value.get("id"),
                                                 row_id,
-                                                parent.get('id'),
-                                                parent_key)
-                                    p = separator.join([abs_path, key, str(i)])
-                                    to_analyze.append((
-                                        p,
-                                        pointer,
-                                        key,
-                                        record,
-                                        value,
-                                    ))
+                                                parent.get("id"),
+                                                parent_key,
+                                            )
+                                    abs_pointer = separator.join([abs_path, key, str(i)])
+                                    to_analyze.append(
+                                        (
+                                            abs_pointer,
+                                            pointer,
+                                            key,
+                                            record,
+                                            value,
+                                        )
+                                    )
                     else:
                         root = get_root(self.current_table)
                         abs_pointer = separator.join((abs_path, key))
@@ -254,10 +256,10 @@ class DataPreprocessor:
                         if pointer not in self.current_table.columns:
                             self.current_table.add_column(
                                 pointer,
-                                {'title': key},
-                                PYTHON_TO_JSON_TYPE.get(type(item).__name__, 'N/A'),
+                                {"title": key},
+                                PYTHON_TO_JSON_TYPE.get(type(item).__name__, "N/A"),
                                 parent=record,
-                                additional=True
+                                additional=True,
                             )
                         self.current_table.inc_column(pointer)
                         root.inc_column(abs_pointer, combined=True)
@@ -268,5 +270,37 @@ class DataPreprocessor:
     def dump(self):
         """Dump table objects to python dictionary"""
         return {
-            'tables': {name: asdict(table) for name, table in self.tables.items()}
+            "schema_dict": self.schema_dict,
+            "root_tables": self.root_tables,
+            "combined_tables": self.combined_tables,
+            "header_separator": self.header_separator,
+            "tables": {name: table.dump() for name, table in self.tables.items()},
+            "table_threshold": self.table_threshold,
         }
+
+    @classmethod
+    def restore(cls, data):
+        """Restore DataPreprocessor from existing data
+
+        :param data: Data to restore from
+        """
+        try:
+            spec = {
+                "schema_dict": data["schema_dict"],
+                "root_tables": data["root_tables"],
+                "combined_tables": data["combined_tables"],
+                "header_separator": data["header_separator"],
+                "table_threshold": data["table_threshold"],
+            }
+        except KeyError as e:
+            LOGGER.error(_("Failed to restore from mailformed data. Missing {} attribute").format(e))
+            return
+        tables = {name: Table(**table) for name, table in data["tables"].items() if table["is_root"]}
+
+        for name, table in data["tables"].items():
+            if not table["is_root"]:
+                parent = tables[table["parent"]]
+                table["parent"] = parent
+                tables[name] = Table(**table)
+        spec["tables"] = tables
+        return cls(**spec)

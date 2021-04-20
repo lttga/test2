@@ -1,19 +1,39 @@
-from itertools import chain
-from dataclasses import replace
+import codecs
+import json
+import logging
 from collections import OrderedDict
-from os.path import commonpath
+from dataclasses import replace
+from itertools import chain
+from numbers import Number
 
 import ijson
 
 from spoonbill.common import DEFAULT_FIELDS_COMBINED
 
 PYTHON_TO_JSON_TYPE = {
-    'list': 'array',
-    'dict': 'object',
-    'string': 'string',
-    'int': 'integer',
-    'float': 'number'
+    "list": "array",
+    "dict": "object",
+    "string": "string",
+    "int": "integer",
+    "float": "number",
 }
+LOGGER = logging.getLogger("spoonbill")
+
+
+def common_prefix(path, subpath, separator="/"):
+    """Given two paths, returns the longest common sub-path.
+
+    >>> common_prefix('/contracts', '/contracts/items')
+    '/contracts'
+    >>> common_prefix('/tender/submissionMethod', '/tender/submissionMethodDetails')
+    '/tender'
+    >>> common_prefix('/tender/items/id', '/tender/items/description')
+    '/tender/items'
+    """
+    paths = path.split(separator)
+    subpaths = subpath.split(separator)
+    common = [chunk for chunk in paths if chunk in subpaths]
+    return separator.join(common)
 
 
 def iter_file(filename, root):
@@ -22,9 +42,14 @@ def iter_file(filename, root):
     :param str filename: Path to file
     :param str root: Array field name inside file
     :return: Array items iterator
+
+    >>> [r for r in iter_file('tests/data/ocds-sample-data.json', 'records')]
+    []
+    >>> len([r for r in iter_file('tests/data/ocds-sample-data.json', 'releases')])
+    6
     """
-    with open(filename) as fd:
-        reader = ijson.items(fd, f'{root}.item')
+    with open(filename, "rb") as fd:
+        reader = ijson.items(fd, f"{root}.item")
         for item in reader:
             yield item
 
@@ -40,17 +65,19 @@ def extract_type(item):
     >>> extract_type({'type': ['string', 'null']})
     ['string', 'null']
     """
-    if not item or 'type' not in item:
+    if not item or "type" not in item:
         return []
-    type_ = item['type']
+    type_ = item["type"]
     if not isinstance(type_, list):
         type_ = [type_]
     return type_
 
 
 def validate_type(type_, item):
-    """ Validate if python object corresponds to provided type
+    """Validate if python object corresponds to provided type
     >>> validate_type(['string'], 'test_string')
+    True
+    >>> validate_type(['number'], 11.1)
     True
     >>> validate_type(['number'], 11)
     True
@@ -63,7 +90,10 @@ def validate_type(type_, item):
     >>> validate_type(['object'], {})
     True
     """
-    name = type(item).__name__
+    if isinstance(item, Number):
+        name = "number"
+    else:
+        name = type(item).__name__
     expected = PYTHON_TO_JSON_TYPE.get(name)
     if expected:
         return expected in type_
@@ -81,7 +111,7 @@ def combine_path(root, path, index="0", separator="/"):
     """Generates index based header for combined column"""
     combined_path = path
     for array in sorted(root.arrays, reverse=True):
-        if commonpath((path, array)) == array:
+        if common_prefix(path, array) == array:
             chunk = separator.join((array, index))
             combined_path = combined_path.replace(array, chunk)
     return combined_path
@@ -95,19 +125,19 @@ def prepare_title(item, parent):
     :return: Generated title
     """
     title = []
-    if hasattr(parent, '__reference__') and parent.__reference__.get('title'):
-        parent_title = parent.__reference__.get('title', '')
+    if hasattr(parent, "__reference__") and parent.__reference__.get("title"):
+        parent_title = parent.__reference__.get("title", "")
     else:
-        parent_title = parent.get('title', '')
-    for chunk in chain(parent_title.split(), item['title'].split()):
+        parent_title = parent.get("title", "")
+    for chunk in chain(parent_title.split(), item["title"].split()):
         chunk = chunk.capitalize()
         if chunk not in title:
             title.append(chunk)
-    return ' '.join(title)
+    return " ".join(title)
 
 
 def get_matching_tables(tables, path):
-    """ Get list of matching tables for provided path
+    """Get list of matching tables for provided path
 
     Return list is sorted by longest matching path part
 
@@ -118,17 +148,13 @@ def get_matching_tables(tables, path):
     candidates = []
     for table in tables.values():
         for candidate in table.path:
-            if commonpath((candidate, path)) == candidate:
+            if common_prefix(candidate, path) == candidate:
                 candidates.append(table)
-    return sorted(
-        candidates,
-        key=lambda c: max((len(p) for p in c.path)),
-        reverse=True
-    )
+    return sorted(candidates, key=lambda c: max((len(p) for p in c.path)), reverse=True)
 
 
 def generate_table_name(parent_table, parent_key, key):
-    """ Generates name for non root table, to be used as sheet name
+    """Generates name for non root table, to be used as sheet name
 
     :param str parent_table: Parent table name
     :param str parent_key: Parent object field name
@@ -144,13 +170,13 @@ def generate_table_name(parent_table, parent_key, key):
     'parties_roles'
     """
     if parent_key in parent_table:
-        return f'{parent_table}_{key[:5]}'
+        return f"{parent_table}_{key[:5]}"
     else:
-        return f'{parent_table}_{parent_key[:5]}_{key[:5]}'
+        return f"{parent_table}_{parent_key[:5]}_{key[:5]}"
 
 
 def generate_row_id(ocid, item_id, parent_key=None, top_level_id=None):
-    """ Generates uniq rowID for table row
+    """Generates uniq rowID for table row
 
     :param str ocid: OCID of release
     :param str item_id: Corresponding object id for current row, e.g. tender/id
@@ -168,40 +194,87 @@ def generate_row_id(ocid, item_id, parent_key=None, top_level_id=None):
     >>> generate_row_id('ocid', 'item', '', '')
     'ocid/item'
     """
-    tail = f'{parent_key}:{item_id}' if parent_key else \
-        item_id
+    tail = f"{parent_key}:{item_id}" if parent_key else item_id
     if top_level_id:
-        return f'{ocid}/{top_level_id}/{tail}'
-    return f'{ocid}/{tail}'
+        return f"{ocid}/{top_level_id}/{tail}"
+    return f"{ocid}/{tail}"
 
 
-def recalculate_headers(root, abs_path, key, item, separator='/'):
-    """Rebuild table combined headers when array is expanded with attempt to preserve order
+def recalculate_headers(root, abs_path, key, item, separator="/"):
+    """Rebuild table headers when array is expanded with attempt to preserve order
 
     :param root: Table for which headers should be rebuild
-    :param abs_path: Full jsonpath for array on `abs_path`
-    :param key: Array fieldname
-    :param item: Full array
+    :param abs_path: Full jsonpath to array
+    :param key: Array field name
+    :param item: Array items
     :param separator: header path separator
-
     """
     head = OrderedDict()
     tail = OrderedDict()
     cols = head
     base_prefix = separator.join((abs_path, key))
+    zero_prefix = separator.join((base_prefix, "0"))
 
-    for col_path, col in root.combined_columns.items():
-        cols[col_path] = col
-        if col_path in DEFAULT_FIELDS_COMBINED or base_prefix not in col_path:
-            continue
+    zero_cols = {
+        col_p: col
+        for col_p, col in root.combined_columns.items()
+        if col_p not in DEFAULT_FIELDS_COMBINED and common_prefix(col_p, zero_prefix) == zero_prefix
+    }
+    new_cols = {}
+    for col_i, _ in enumerate(item, 1):
+        col_prefix = separator.join((base_prefix, str(col_i)))
+        for col_p, col in zero_cols.items():
+            col_id = col.id.replace(zero_prefix, col_prefix)
+            new_cols[col_id] = replace(col, id=col_id)
 
-        zero_index = separator.join((base_prefix, "0"))
-        for col_i, _ in enumerate(item, 1):
-            if commonpath((col_path, zero_index)) == zero_index:
-                col_prefix = separator.join((base_prefix, str(col_i)))
-                new_id = col.id.replace(zero_index, col_prefix)
-                new_col = replace(col, id=new_id)
-                cols = tail
-                cols[new_id] = new_col
+    head_updated = False
+    for col_p, col in root.combined_columns.items():
+        if col_p in zero_cols and not head_updated:
+            head.update(zero_cols)
+            tail.update(new_cols)
+            head_updated = True
+            cols = tail
+        else:
+            if col_p not in cols:
+                cols[col_p] = col
     for col_path, col in chain(head.items(), tail.items()):
         root.combined_columns[col_path] = col
+
+
+def resolve_file_uri(file_path):
+    """Read json file from provided uri
+
+    :param file_path: URI to file, could be url or path
+    :return: Read file as dictionary
+    """
+    if file_path.startswith("http"):
+        import requests
+
+        return requests.get(file_path).json()
+    else:
+        with codecs.open(file_path, encoding="utf-8") as fd:
+            return json.load(fd)
+
+
+def get_headers(table, options):
+    """Generate table headers respecting human and override options
+
+    :param table: Target table
+    :param options: Flattening options
+    :return: Mapping between column and its header
+    """
+    split = options.split
+    headers = {c: c for c in table.available_rows(split=split)}
+    if options.pretty_headers:
+        for c in headers:
+            headers[c] = table.titles.get(c, c)
+    if options.headers:
+        for c, h in options.headers.items():
+            headers[c] = h
+    return headers
+
+
+def get_pointer(pointer, abs_path, key, split, separator="/", is_root=True):
+    if split or is_root:
+        return pointer
+    return separator.join((abs_path, key))
