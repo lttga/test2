@@ -33,6 +33,7 @@ jobs:
             pre-commit run --all-files
   tests:
     runs-on: ${{ matrix.os }}
+    needs: lint
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
