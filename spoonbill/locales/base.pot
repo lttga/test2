@@ -5,56 +5,144 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-04-15 14:41+0300\n"
+"POT-Creation-Date: 2021-05-11 17:14+EEST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: spoonbill/cli.py:25
+#: spoonbill/cli.py:19
+msgid "Processed {}"
+msgstr ""
+
+#: spoonbill/cli.py:20
+msgid "Flattened {}"
+msgstr ""
+
+#: spoonbill/cli.py:37
+msgid "Wrong selection, table '{}' does not exist"
+msgstr ""
+
+#: spoonbill/cli.py:53
 msgid "CLI tool to flatten OCDS datasets"
 msgstr ""
 
-#: spoonbill/cli.py:26
+#: spoonbill/cli.py:54
 msgid "Schema file uri"
 msgstr ""
 
-#: spoonbill/cli.py:29
+#: spoonbill/cli.py:55
+msgid "List of tables to extract"
+msgstr ""
+
+#: spoonbill/cli.py:58
+msgid "List of tables to split into multiple sheets"
+msgstr ""
+
+#: spoonbill/cli.py:64
 msgid "Uri to previously generated state file"
 msgstr ""
 
-#: spoonbill/cli.py:32
+#: spoonbill/cli.py:67
 msgid "Path to result xlsx file"
 msgstr ""
 
-#: spoonbill/cli.py:35
+#: spoonbill/cli.py:70
 msgid "Path to directory for output csv files"
 msgstr ""
 
-#: spoonbill/cli.py:39
+#: spoonbill/cli.py:76
 msgid "Output column to parent table"
 msgstr ""
 
-#: spoonbill/cli.py:40
+#: spoonbill/cli.py:80
 msgid "Combine same objects to single table"
 msgstr ""
 
-#: spoonbill/cli.py:41
+#: spoonbill/cli.py:81
 msgid "Specify which fields to output"
 msgstr ""
 
-#: spoonbill/cli.py:44
-msgid "For array, use one field value as the column name and another field value as the cell value"
-msgstr ""
-
-#: spoonbill/cli.py:49
+#: spoonbill/cli.py:84
 msgid "Repeat a column from a parent sheet onto child tables"
 msgstr ""
 
-#: spoonbill/cli.py:52
+#: spoonbill/cli.py:89
 msgid "For each array field, add a count column to the parent table"
+msgstr ""
+
+#: spoonbill/cli.py:94
+msgid "Use the schema's title properties for column headings"
+msgstr ""
+
+#: spoonbill/cli.py:120
+msgid "Input file is {}"
+msgstr ""
+
+#: spoonbill/cli.py:131 spoonbill/cli.py:137
+msgid "No schema provided, using version {}"
+msgstr ""
+
+#: spoonbill/cli.py:142
+msgid "Incomplete schema, please make sure your data is correct"
+msgstr ""
+
+#: spoonbill/cli.py:156
+msgid "Restoring from provided state file"
+msgstr ""
+
+#: spoonbill/cli.py:159
+msgid "State file not supplied, starting to analyze input file"
+msgstr ""
+
+#: spoonbill/cli.py:175
+msgid "Dumped analyzed data to '{}'"
+msgstr ""
+
+#: spoonbill/cli.py:181
+msgid "Ignoring empty table {}"
+msgstr ""
+
+#: spoonbill/cli.py:191
+msgid "Going to export tables: {}"
+msgstr ""
+
+#: spoonbill/cli.py:200
+msgid "Done. Flattened {} objects"
+msgstr ""
+
+#: spoonbill/flatten.py:141
+msgid "Ignoring repeat column {} because it is not in table {}"
+msgstr ""
+
+#: spoonbill/stats.py:317
+msgid "Failed to restore from malformed data. Missing {} attribute"
+msgstr ""
+
+#: spoonbill/stats.py:318
+msgid "Unable to restore, invalid input data"
+msgstr ""
+
+#: spoonbill/writers/csv.py:38
+msgid "Failed to open file {} with error {}"
+msgstr ""
+
+#: spoonbill/writers/csv.py:51
+msgid "Failed to headers with error {}"
+msgstr ""
+
+#: spoonbill/writers/csv.py:58
+msgid "Failed to write row {} with error {}"
+msgstr ""
+
+#: spoonbill/writers/xlsx.py:48
+msgid "Failed to write header {} to xlsx sheet {} with error {}"
+msgstr ""
+
+#: spoonbill/writers/xlsx.py:62
+msgid "Failed to write column {} to xlsx sheet {} with error {}"
 msgstr ""
