@@ -79,7 +79,7 @@ jobs:
       - name: "Generate pot file"
         run: |
              sudo apt-get install gettext
-             pygettext.py -v -d base -o spoonbill/locales/base.pot spoonbill/
+             pygettext3 -v -d base -o spoonbill/locales/base.pot spoonbill/
       - name: "Download translate files from transifex"
         uses: docker://sergioisidoro/github-transifex-action:v0.2.0
         with:
