@@ -98,8 +98,8 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.PAT }}
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
@@ -108,4 +108,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/pontostroy/spoonbill:latest
+            ghcr.io/user/spoonbill:latest
