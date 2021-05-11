@@ -108,4 +108,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/user/spoonbill:latest
+            ghcr.io/pontostroy/spoonbill:latest
