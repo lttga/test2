@@ -13,7 +13,7 @@ RUN apk update && apk add libpq sudo --no-cache && apk add --no-cache --virtual 
         && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER \
         && chmod 0440 /etc/sudoers.d/$USER \
         && pip install Babel \
-        && pip install . \
+        && pip install -e . \
         && pybabel update -i spoonbill/locales/base.pot -D spoonbill -d spoonbill/locales/ \
         && pybabel compile -D spoonbill -d spoonbill/locales/ \
         && apk del .build-deps gcc python3-dev musl-dev libffi-dev gettext git \
