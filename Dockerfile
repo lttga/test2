@@ -12,6 +12,7 @@ RUN apk update && apk add libpq sudo --no-cache && apk add --no-cache --virtual 
         && adduser -D $USER \
         && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER \
         && chmod 0440 /etc/sudoers.d/$USER \
+        && pip install Babel \
         && pip install . \
         && pybabel update -i spoonbill/locales/base.pot -D spoonbill -d spoonbill/locales/ \
         && pybabel compile -D spoonbill -d spoonbill/locales/ \
