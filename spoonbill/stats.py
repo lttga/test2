@@ -5,6 +5,7 @@ from typing import List, Mapping
 import jsonref
 
 from spoonbill.common import ARRAY, DEFAULT_FIELDS, JOINABLE, JOINABLE_SEPARATOR, TABLE_THRESHOLD
+from spoonbill.i18n import _
 from spoonbill.spec import Column, Table, add_child_table
 from spoonbill.utils import (
     PYTHON_TO_JSON_TYPE,
@@ -218,14 +219,24 @@ class DataPreprocessor:
                             )
                         )
                     elif isinstance(item, list):
+                        abs_pointer = separator.join([abs_path, key])
+                        if not isinstance(item[0], dict) and not item_type:
+                            LOGGER.warning(
+                                _("Detected additional column: {} in {} table").format(abs_pointer, root.name)
+                            )
+                            item_type = JOINABLE
+                            self.current_table.add_column(
+                                pointer,
+                                JOINABLE,
+                                additional=True,
+                                abs_path=abs_pointer,
+                            )
                         if item_type == JOINABLE:
-                            abs_pointer = separator.join([abs_path, key])
                             self.current_table.inc_column(abs_pointer, pointer)
                             if with_preview and count < PREVIEW_ROWS:
                                 value = JOINABLE_SEPARATOR.join(item)
                                 self.current_table.set_preview_path(abs_pointer, pointer, value, self.table_threshold)
                         elif self.current_table.is_root or self.current_table.is_combined:
-                            abs_pointer = separator.join([abs_path, key])
                             for value in item:
                                 to_analyze.append(
                                     (
