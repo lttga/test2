@@ -13,9 +13,8 @@ RUN apk update && apk add libpq sudo --no-cache && apk add --no-cache --virtual 
         && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER \
         && chmod 0440 /etc/sudoers.d/$USER \
         && pip install Babel \
-        && pybabel update -i spoonbill/locales/base.pot -D spoonbill -d spoonbill/locales/ \
         && pybabel compile -f -D spoonbill -d spoonbill/locales/ \
-        && pip install . \
+        && pip install -e . \
         && apk del .build-deps gcc python3-dev musl-dev libffi-dev git \
         && rm -fr /root/.cache
 RUN chown -R $USER:$USER /app /data
@@ -24,4 +23,3 @@ RUN chmod 755 /entrypoint.sh
 USER spoonbill
 WORKDIR /data
 ENTRYPOINT ["/entrypoint.sh"]
-# CMD ["/usr/local/bin/spoonbill"]
