@@ -43,6 +43,7 @@ jobs:
             push_translations: false
             push_sources: true
       - run: |
+              sudo chown $(whoami) -R  spoonbill/locales/
               pip install --upgrade setuptools wheel
               pybabel compile -f -D spoonbill -d spoonbill/locales/
       - run: |
