@@ -1,5 +1,6 @@
 """cli.py - Command line interface related routines"""
 import logging
+import os
 import pathlib
 from itertools import chain
 
@@ -72,13 +73,8 @@ def get_selected_tables(base, selection):
     help=_("Uri to previously generated state file"),
     type=click.Path(exists=True),
 )
-@click.option("--xlsx", help=_("Path to result xlsx file"), default=True, is_flag=True)
-@click.option(
-    "--csv",
-    help=_("Path to directory for output csv files"),
-    default=True,
-    is_flag=True,
-)
+@click.option("--xlsx", help=_("Path to result xlsx file"), type=click.Path(), default="result.xlsx")
+@click.option("--csv", help=_("Path to directory for output csv files"), type=click.Path(), required=False)
 @click.option("--combine", help=_("Combine same objects to single table"), type=CommaSeparated())
 @click.option(
     "--unnest",
@@ -156,8 +152,17 @@ def cli(
         _is_concatenated,
         _is_array,
     ) = detect_format(filename)
+    if csv:
+        csv = pathlib.Path(csv).resolve()
+        if not csv.exists():
+            raise click.BadParameter(_("Desired location {} does not exists").format(csv))
+    if xlsx:
+        xlsx = pathlib.Path(xlsx).resolve()
+        if not xlsx.parent.exists():
+            raise click.BadParameter(_("Desired location {} does not exists").format(xlsx.parent))
     click.echo(_("Input file is {}").format(click.style(input_format, fg="green")))
     is_package = "package" in input_format
+    combine_choice = combine if combine else ""
     if not is_package:
         # TODO: fix this
         click.echo("Single releases are not supported by now")
@@ -205,7 +210,7 @@ def cli(
             language=language,
             table_threshold=threshold,
         )
-        click.echo(_("Alanyze options:"))
+        click.echo(_("Analyze options:"))
         click.echo(_(" - table threshold => {}").format(click.style(str(threshold), fg="cyan")))
         click.echo(_(" - language        => {}").format(click.style(language, fg="cyan")))
         click.echo(_("Processing file: {}").format(click.style(str(path), fg="cyan")))
@@ -221,7 +226,7 @@ def cli(
         click.secho(
             _("Done processing. Analyzed objects: {}").format(click.style(str(number + 1), fg="red")), fg="green"
         )
-        state_file = pathlib.Path(f"{filename}.analyzed.json")
+        state_file = pathlib.Path(f"{filename}.state")
         state_file_path = workdir / state_file
         click.echo(_("Dumping analyzed data to '{}'").format(click.style(str(state_file_path.absolute()), fg="cyan")))
         analyzer.dump_to_file(state_file)
@@ -278,8 +283,6 @@ def cli(
             "repeat": repeat,
         }
     options = FlattenOptions(**options)
-    all_tables = chain(options.selection.keys(), combined_tables.keys())
-    click.echo(_("Going to export tables: {}").format(click.style(",".join(all_tables), fg="magenta")))
     flattener = FileFlattener(
         workdir,
         options,
@@ -289,6 +292,19 @@ def cli(
         xlsx=xlsx,
         language=language,
     )
+
+    all_tables = chain([table for table in flattener.flattener.tables.keys()], combine_choice)
+
+    click.echo(_("Going to export tables: {}").format(click.style(",".join(all_tables), fg="magenta")))
+
+    click.echo(_("Processed tables:"))
+    for table in flattener.flattener.tables.keys():
+        message = _("{}: {} rows").format(table, flattener.flattener.tables[table].total_rows)
+        if not flattener.flattener.tables[table].is_root:
+            message = "└-----" + message
+            click.echo(message)
+        else:
+            click.echo(message)
     click.echo(_("Flattening input file"))
     with click.progressbar(
         flattener.flatten_file(filename),
@@ -299,4 +315,5 @@ def cli(
     ) as bar:
         for count in bar:
             bar.label = FLATTENED_LABEL.format(click.style(str(count + 1), fg="cyan"))
+
     click.secho(_("Done flattening. Flattened objects: {}").format(click.style(str(count + 1), fg="red")), fg="green")

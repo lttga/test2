@@ -13,6 +13,7 @@ LOGGER = logging.getLogger("spoonbill")
 @dataclass
 class Column:
     """Column class is a data container to store column information
+
     :param title: Column human friendly title
     :param type: Column expected type
     :param id: Column path
@@ -28,6 +29,7 @@ class Column:
 @dataclass
 class Table:
     """Table data holder
+
     :param name: Table name
     :param path: List of paths to gather data to this table
     :param total_rows: Total available rows in this table
@@ -47,8 +49,8 @@ class Table:
     :param preview_rows_combined: Generated preview for unsplit version of this table
     """
 
-    name: str
-    path: [str]
+    name: str  #: Table name
+    path: [str]  #: List of paths to gather data to this table
     total_rows: int = 0
     # parent is Table object but dataclasses don`t play well with recursion
     parent: object = field(default_factory=dict)
@@ -142,6 +144,7 @@ class Table:
                 # when we analyzing file we need to keep index from data not to use 0
                 # e.g. /tender/items/166/relatedLot
                 combined_path = abs_path
+            LOGGER.debug(_("Detected additional column: %s in %s table") % (path, self.name))
             self.additional_columns[combined_path] = Column(title, item_type, combined_path)
 
         for p in (path, combined_path):
@@ -198,6 +201,8 @@ class Table:
     def inc(self):
         """Increment number of rows in table"""
         self.total_rows += 1
+        for col_name in DEFAULT_FIELDS_COMBINED:
+            self.inc_column(col_name, col_name)
 
     def dump(self):
         data = asdict(self)
@@ -208,7 +213,6 @@ class Table:
     def set_preview_path(self, abs_path, path, value, max_items):
         header = get_pointer(self, abs_path, path, True)
         array = self.is_array(path)
-
         self.preview_rows[-1][header] = value
         if header in self.combined_columns:
             if not array or (array and self.arrays[array] < max_items):

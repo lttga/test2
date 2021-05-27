@@ -16,11 +16,13 @@ requires = [
     "ocdsextensionregistry",
     'dataclasses;python_version<"3.7"',
 ]
-test_requires = ["pytest", "jmespath", "pytest-cov", "coveralls", "openpyxl"] + requires
+test_requires = ["pytest", "jmespath", "pytest-cov", "coveralls", "openpyxl", "jsonpointer"] + requires
 docs_requires = [
     "Sphinx",
     "sphinx-autobuild",
     "sphinx-rtd-theme",
+    "sphinx_click",
+    "sphinx_changelog",
 ]
 
 setup(
