@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>CLI Reference &mdash; spoonbill 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Flattenning configuration" href="flattenning-conf.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> spoonbill
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli-usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flattenning-conf.html">Flattenning configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLI Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#spoonbill">spoonbill</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer-guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change-log.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">spoonbill</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>CLI Reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/cli.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cli-reference">
+<h1>CLI Reference<a class="headerlink" href="#cli-reference" title="Permalink to this headline">¶</a></h1>
+<p>Please find an examples of CLI Tool usage <a class="reference internal" href="cli_usage.html#usage-examples"><span class="std std-ref">here</span></a>.</p>
+<p>See full list of CLI options below.</p>
+<p>Primary command:</p>
+<div class="section" id="spoonbill">
+<h2>spoonbill<a class="headerlink" href="#spoonbill" title="Permalink to this headline">¶</a></h2>
+<p>CLI tool to flatten OCDS datasets</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>spoonbill <span class="o">[</span>OPTIONS<span class="o">]</span> FILENAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-schema">
+<span class="sig-name descname"><span class="pre">--schema</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;schema&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schema file uri</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-selection">
+<span class="sig-name descname"><span class="pre">--selection</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;selection&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of tables to extract</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-split">
+<span class="sig-name descname"><span class="pre">--split</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;split&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-split" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of tables to split into multiple sheets</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-threshold">
+<span class="sig-name descname"><span class="pre">--threshold</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;threshold&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum number of elements in array before its spitted into table</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-state-file">
+<span class="sig-name descname"><span class="pre">--state-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;state_file&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-state-file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uri to previously generated state file</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-xlsx">
+<span class="sig-name descname"><span class="pre">--xlsx</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;xlsx&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-xlsx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to result xlsx file</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-csv">
+<span class="sig-name descname"><span class="pre">--csv</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;csv&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to directory for output csv files</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-combine">
+<span class="sig-name descname"><span class="pre">--combine</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;combine&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-combine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine same objects to single table</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-unnest">
+<span class="sig-name descname"><span class="pre">--unnest</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;unnest&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-unnest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract columns form child tables to parent table</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-unnest-file">
+<span class="sig-name descname"><span class="pre">--unnest-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;unnest_file&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-unnest-file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as –unnest, but read columns from a file</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-only">
+<span class="sig-name descname"><span class="pre">--only</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;only&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-only" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify which fields to output</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-only-file">
+<span class="sig-name descname"><span class="pre">--only-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;only_file&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-only-file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as –only, but read columns from a file</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-repeat">
+<span class="sig-name descname"><span class="pre">--repeat</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;repeat&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-repeat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repeat a column from a parent sheet onto child tables</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-repeat-file">
+<span class="sig-name descname"><span class="pre">--repeat-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;repeat_file&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-repeat-file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as –repeat, but read columns from a file</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-count">
+<span class="sig-name descname"><span class="pre">--count</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-spoonbill-count" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each array field, add a count column to the parent table</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-human">
+<span class="sig-name descname"><span class="pre">--human</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-spoonbill-human" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the schema’s title properties for column headings</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-language">
+<span class="sig-name descname"><span class="pre">--language</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;language&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-language" title="Permalink to this definition">¶</a></dt>
+<dd><p>Language for headings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options</dt>
+<dd class="field-odd"><p>en | es</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-v">
+<span id="cmdoption-spoonbill-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-spoonbill-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-spoonbill-arg-FILENAME">
+<span id="cmdoption-spoonbill-arg-filename"></span><span class="sig-name descname"><span class="pre">FILENAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-spoonbill-arg-FILENAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="flattenning-conf.html" class="btn btn-neutral float-left" title="Flattenning configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Open Contracting Partnership.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
